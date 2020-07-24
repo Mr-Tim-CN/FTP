@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace FTP
 {
-    public partial class Form1 : Form
+    public partial class Main_Form : Form
     {
-        public Form1()
+        public Main_Form()
         {
             InitializeComponent();
         }
