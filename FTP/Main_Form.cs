@@ -12,13 +12,17 @@ namespace FTP
 {
     public partial class Main_Form : Form
     {
-        #region 打印日志的功能
+        public Main_Form()
+        {
+            InitializeComponent();
+        }
+
+        #region 打印日志功能
 
         /// <summary>
         /// 调用Log(string)可以直接在日志区新增一行日志。
         /// </summary>
-        /// <param name="logContent"></param>
-        
+
         private void Log(string logContent)                             //打印日志
         {
             string time = DateTime.Now.ToLocalTime().ToString();
@@ -33,17 +37,9 @@ namespace FTP
 
         #endregion
 
-        public Main_Form()
-        {
-            InitializeComponent();
-        }
+        #region 登录功能
 
-        private void Upload_Button_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void Download_Button_Click(object sender, EventArgs e)
+        private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)
         {
 
         }
@@ -53,14 +49,34 @@ namespace FTP
 
         }
 
+        #endregion
+
+        #region 断开连接功能
+
         private void Logout_Button_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)
+        #endregion
+
+        #region 上传功能
+
+        private void Upload_Button_Click(object sender, EventArgs e)
         {
 
         }
+
+        #endregion
+
+        #region 下载功能
+
+        private void Download_Button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
+
     }
 }
