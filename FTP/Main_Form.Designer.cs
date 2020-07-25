@@ -32,7 +32,7 @@
             this.Download_Button = new System.Windows.Forms.Button();
             this.File_Box = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.listView1 = new System.Windows.Forms.ListView();
+            this.Folder_View = new System.Windows.Forms.ListView();
             this.Name_Box = new System.Windows.Forms.TextBox();
             this.Pwd_Box = new System.Windows.Forms.TextBox();
             this.Login_Button = new System.Windows.Forms.Button();
@@ -49,7 +49,7 @@
             // 
             // Upload_Button
             // 
-            this.Upload_Button.Location = new System.Drawing.Point(568, 209);
+            this.Upload_Button.Location = new System.Drawing.Point(302, 209);
             this.Upload_Button.Name = "Upload_Button";
             this.Upload_Button.Size = new System.Drawing.Size(154, 23);
             this.Upload_Button.TabIndex = 0;
@@ -59,7 +59,7 @@
             // 
             // Download_Button
             // 
-            this.Download_Button.Location = new System.Drawing.Point(568, 256);
+            this.Download_Button.Location = new System.Drawing.Point(580, 209);
             this.Download_Button.Name = "Download_Button";
             this.Download_Button.Size = new System.Drawing.Size(154, 23);
             this.Download_Button.TabIndex = 1;
@@ -71,9 +71,9 @@
             // 
             this.File_Box.FormattingEnabled = true;
             this.File_Box.ItemHeight = 12;
-            this.File_Box.Location = new System.Drawing.Point(550, 43);
+            this.File_Box.Location = new System.Drawing.Point(550, 46);
             this.File_Box.Name = "File_Box";
-            this.File_Box.Size = new System.Drawing.Size(202, 148);
+            this.File_Box.Size = new System.Drawing.Size(213, 148);
             this.File_Box.TabIndex = 2;
             // 
             // label1
@@ -85,14 +85,14 @@
             this.label1.TabIndex = 3;
             this.label1.Text = "当前文件夹的文件：";
             // 
-            // listView1
+            // Folder_View
             // 
-            this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(274, 43);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(213, 236);
-            this.listView1.TabIndex = 4;
-            this.listView1.UseCompatibleStateImageBehavior = false;
+            this.Folder_View.HideSelection = false;
+            this.Folder_View.Location = new System.Drawing.Point(274, 43);
+            this.Folder_View.Name = "Folder_View";
+            this.Folder_View.Size = new System.Drawing.Size(213, 151);
+            this.Folder_View.TabIndex = 4;
+            this.Folder_View.UseCompatibleStateImageBehavior = false;
             // 
             // Name_Box
             // 
@@ -185,7 +185,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 273);
+            this.label6.Location = new System.Drawing.Point(12, 249);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(41, 12);
             this.label6.TabIndex = 16;
@@ -193,12 +193,12 @@
             // 
             // Log_Box
             // 
-            this.Log_Box.Location = new System.Drawing.Point(14, 298);
+            this.Log_Box.Location = new System.Drawing.Point(14, 274);
             this.Log_Box.Multiline = true;
             this.Log_Box.Name = "Log_Box";
             this.Log_Box.ReadOnly = true;
             this.Log_Box.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.Log_Box.Size = new System.Drawing.Size(780, 161);
+            this.Log_Box.Size = new System.Drawing.Size(793, 161);
             this.Log_Box.TabIndex = 17;
             this.Log_Box.TextChanged += new System.EventHandler(this.Log_Box_TextChanged);
             // 
@@ -206,7 +206,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(806, 471);
+            this.ClientSize = new System.Drawing.Size(819, 458);
             this.Controls.Add(this.Log_Box);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -219,7 +219,7 @@
             this.Controls.Add(this.Login_Button);
             this.Controls.Add(this.Pwd_Box);
             this.Controls.Add(this.Name_Box);
-            this.Controls.Add(this.listView1);
+            this.Controls.Add(this.Folder_View);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.File_Box);
             this.Controls.Add(this.Download_Button);
@@ -238,7 +238,7 @@
         private System.Windows.Forms.Button Download_Button;
         private System.Windows.Forms.ListBox File_Box;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ListView Folder_View;
         private System.Windows.Forms.TextBox Name_Box;
         private System.Windows.Forms.TextBox Pwd_Box;
         private System.Windows.Forms.Button Login_Button;
