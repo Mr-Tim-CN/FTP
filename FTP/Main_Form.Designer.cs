@@ -65,6 +65,7 @@
             this.Download_Button.TabIndex = 1;
             this.Download_Button.Text = "下载所选的文件";
             this.Download_Button.UseVisualStyleBackColor = true;
+            this.Download_Button.Click += new System.EventHandler(this.Download_Button_Click);
             // 
             // File_Box
             // 
@@ -115,6 +116,7 @@
             this.Login_Button.TabIndex = 7;
             this.Login_Button.Text = "登录";
             this.Login_Button.UseVisualStyleBackColor = true;
+            this.Login_Button.Click += new System.EventHandler(this.Login_Button_Click);
             // 
             // Anonymous_Check
             // 
@@ -125,6 +127,7 @@
             this.Anonymous_Check.TabIndex = 8;
             this.Anonymous_Check.Text = "匿名登录";
             this.Anonymous_Check.UseVisualStyleBackColor = true;
+            this.Anonymous_Check.CheckedChanged += new System.EventHandler(this.Anonymous_Check_CheckedChanged);
             // 
             // label2
             // 
@@ -152,6 +155,7 @@
             this.Logout_Button.TabIndex = 11;
             this.Logout_Button.Text = "断开连接";
             this.Logout_Button.UseVisualStyleBackColor = true;
+            this.Logout_Button.Click += new System.EventHandler(this.Logout_Button_Click);
             // 
             // label4
             // 

@@ -42,6 +42,25 @@ namespace FTP
         {
 
         }
-        
+
+        private void Download_Button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Login_Button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Logout_Button_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
