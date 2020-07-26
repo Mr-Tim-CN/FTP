@@ -1,10 +1,4 @@
-﻿using System;
-using System.Net.Sockets;
-using System.IO;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
-
-namespace FTP
+﻿namespace FTP
 {
     partial class Main_Form
     {
@@ -13,93 +7,6 @@ namespace FTP
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        #region 全局变量
-        private TcpClient cmdServer;
-        private TcpClient dataServer;
-        private NetworkStream cmdStrmWtr;
-        private StreamReader cmdStrmRdr;
-        private NetworkStream dataStrmWtr;
-        private StreamReader dataStrmRdr;
-        private String cmdData;
-        private byte[] szData;
-        private const String CRLF = "\r\n";
-        #endregion
-
-        #region 全局函数
-        private String getSatus()
-        {
-            String ret = cmdStrmRdr.ReadLine();
-            Log(ret);
-            return ret;
-        }
-
-        private void openDataPort()
-        {
-            string retstr;
-            string[] retArray;
-            int dataPort;
-
-            // Start Passive Mode 
-            cmdData = "PASV" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            retstr = this.getSatus();
-
-            // Calculate data's port
-            retArray = Regex.Split(retstr, ",");
-            if (retArray[5][2] != ')') retstr = retArray[5].Substring(0, 3);
-            else retstr = retArray[5].Substring(0, 2);
-            dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
-            Log("Get dataPort=" + dataPort);
-
-
-            //Connect to the dataPort
-            dataServer = new TcpClient(IP_Box.Text, dataPort);
-            dataStrmRdr = new StreamReader(dataServer.GetStream());
-            dataStrmWtr = dataServer.GetStream();
-        }
-
-        /// <summary>
-        /// 断开数据端口的连接
-        /// </summary>
-        private void closeDataPort()
-        {
-            dataStrmRdr.Close();
-            dataStrmWtr.Close();
-            this.getSatus();
-
-            cmdData = "ABOR" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.getSatus();
-
-        }
-
-
-        private void freshFileBox_Right()
-        {
-
-            openDataPort();
-
-            string absFilePath;
-
-            //List
-            cmdData = "LIST" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.getSatus();
-
-            File_Box.Items.Clear();
-            while ((absFilePath = dataStrmRdr.ReadLine()) != null)
-            {
-                string[] temp = Regex.Split(absFilePath, " ");
-                File_Box.Items.Add(temp[temp.Length - 1]);
-            }
-
-            closeDataPort();
-        }
-
-        #endregion
         /// <summary>
         /// 清理所有正在使用的资源。
         /// </summary>
@@ -193,6 +100,7 @@ namespace FTP
             this.Name_Box.Name = "Name_Box";
             this.Name_Box.Size = new System.Drawing.Size(100, 21);
             this.Name_Box.TabIndex = 5;
+            this.Name_Box.Text = "testuser";
             // 
             // Pwd_Box
             // 
@@ -200,6 +108,7 @@ namespace FTP
             this.Pwd_Box.Name = "Pwd_Box";
             this.Pwd_Box.Size = new System.Drawing.Size(100, 21);
             this.Pwd_Box.TabIndex = 6;
+            this.Pwd_Box.Text = "Test123123";
             // 
             // Login_Button
             // 
@@ -265,6 +174,7 @@ namespace FTP
             this.IP_Box.Name = "IP_Box";
             this.IP_Box.Size = new System.Drawing.Size(100, 21);
             this.IP_Box.TabIndex = 13;
+            this.IP_Box.Text = "47.115.21.139";
             // 
             // label5
             // 
@@ -294,12 +204,7 @@ namespace FTP
             this.Log_Box.Size = new System.Drawing.Size(793, 161);
             this.Log_Box.TabIndex = 17;
             this.Log_Box.TextChanged += new System.EventHandler(this.Log_Box_TextChanged);
-            /*  this.File_Box.FormattingEnabled = true;
-            this.File_Box.ItemHeight = 12;
-            this.File_Box.Location = new System.Drawing.Point(550, 46);
-            this.File_Box.Name = "File_Box";
-            this.File_Box.Size = new System.Drawing.Size(213, 148);
-            this.File_Box.TabIndex = 2;*/
+            // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
