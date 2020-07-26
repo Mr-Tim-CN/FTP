@@ -162,12 +162,12 @@ namespace FTP
                 string retstr;
 
                 //login
-                cmdData = "USER" + Name_Box.Text + CRLF;
+                cmdData = "USER " + Name_Box.Text + CRLF;
                 szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 this.getSatus();
 
-                cmdData = "PASS" + Pwd_Box.Text + CRLF;
+                cmdData = "PASS " + Pwd_Box.Text + CRLF;
                 szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = this.getSatus().Substring(0, 3);
