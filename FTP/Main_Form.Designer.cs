@@ -32,8 +32,7 @@
             this.Download_Button = new System.Windows.Forms.Button();
             this.File_Box = new System.Windows.Forms.ListBox();
             this.label1 = new System.Windows.Forms.Label();
-            this.Folder_View = new System.Windows.Forms.ListView();
-            this.Name_Box = new System.Windows.Forms.TextBox();
+            this.User_Box = new System.Windows.Forms.TextBox();
             this.Pwd_Box = new System.Windows.Forms.TextBox();
             this.Login_Button = new System.Windows.Forms.Button();
             this.Anonymous_Check = new System.Windows.Forms.CheckBox();
@@ -45,10 +44,12 @@
             this.label5 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.Log_Box = new System.Windows.Forms.TextBox();
+            this.Folder_Box = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // Upload_Button
             // 
+            this.Upload_Button.Enabled = false;
             this.Upload_Button.Location = new System.Drawing.Point(302, 209);
             this.Upload_Button.Name = "Upload_Button";
             this.Upload_Button.Size = new System.Drawing.Size(154, 23);
@@ -59,6 +60,7 @@
             // 
             // Download_Button
             // 
+            this.Download_Button.Enabled = false;
             this.Download_Button.Location = new System.Drawing.Point(580, 209);
             this.Download_Button.Name = "Download_Button";
             this.Download_Button.Size = new System.Drawing.Size(154, 23);
@@ -71,7 +73,7 @@
             // 
             this.File_Box.FormattingEnabled = true;
             this.File_Box.ItemHeight = 12;
-            this.File_Box.Location = new System.Drawing.Point(550, 46);
+            this.File_Box.Location = new System.Drawing.Point(550, 43);
             this.File_Box.Name = "File_Box";
             this.File_Box.Size = new System.Drawing.Size(213, 148);
             this.File_Box.TabIndex = 2;
@@ -85,22 +87,13 @@
             this.label1.TabIndex = 3;
             this.label1.Text = "当前文件夹的文件：";
             // 
-            // Folder_View
+            // User_Box
             // 
-            this.Folder_View.HideSelection = false;
-            this.Folder_View.Location = new System.Drawing.Point(274, 43);
-            this.Folder_View.Name = "Folder_View";
-            this.Folder_View.Size = new System.Drawing.Size(213, 151);
-            this.Folder_View.TabIndex = 4;
-            this.Folder_View.UseCompatibleStateImageBehavior = false;
-            // 
-            // Name_Box
-            // 
-            this.Name_Box.Location = new System.Drawing.Point(111, 84);
-            this.Name_Box.Name = "Name_Box";
-            this.Name_Box.Size = new System.Drawing.Size(100, 21);
-            this.Name_Box.TabIndex = 5;
-            this.Name_Box.Text = "testuser";
+            this.User_Box.Location = new System.Drawing.Point(111, 84);
+            this.User_Box.Name = "User_Box";
+            this.User_Box.Size = new System.Drawing.Size(100, 21);
+            this.User_Box.TabIndex = 5;
+            this.User_Box.Text = "testuser";
             // 
             // Pwd_Box
             // 
@@ -151,6 +144,7 @@
             // 
             // Logout_Button
             // 
+            this.Logout_Button.Enabled = false;
             this.Logout_Button.Location = new System.Drawing.Point(53, 209);
             this.Logout_Button.Name = "Logout_Button";
             this.Logout_Button.Size = new System.Drawing.Size(158, 23);
@@ -205,11 +199,21 @@
             this.Log_Box.TabIndex = 17;
             this.Log_Box.TextChanged += new System.EventHandler(this.Log_Box_TextChanged);
             // 
+            // Folder_Box
+            // 
+            this.Folder_Box.FormattingEnabled = true;
+            this.Folder_Box.ItemHeight = 12;
+            this.Folder_Box.Location = new System.Drawing.Point(274, 43);
+            this.Folder_Box.Name = "Folder_Box";
+            this.Folder_Box.Size = new System.Drawing.Size(212, 148);
+            this.Folder_Box.TabIndex = 18;
+            // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(819, 458);
+            this.Controls.Add(this.Folder_Box);
             this.Controls.Add(this.Log_Box);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
@@ -221,8 +225,7 @@
             this.Controls.Add(this.Anonymous_Check);
             this.Controls.Add(this.Login_Button);
             this.Controls.Add(this.Pwd_Box);
-            this.Controls.Add(this.Name_Box);
-            this.Controls.Add(this.Folder_View);
+            this.Controls.Add(this.User_Box);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.File_Box);
             this.Controls.Add(this.Download_Button);
@@ -241,8 +244,7 @@
         private System.Windows.Forms.Button Download_Button;
         private System.Windows.Forms.ListBox File_Box;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.ListView Folder_View;
-        private System.Windows.Forms.TextBox Name_Box;
+        private System.Windows.Forms.TextBox User_Box;
         private System.Windows.Forms.TextBox Pwd_Box;
         private System.Windows.Forms.Button Login_Button;
         private System.Windows.Forms.CheckBox Anonymous_Check;
@@ -254,6 +256,7 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox Log_Box;
+        private System.Windows.Forms.ListBox Folder_Box;
     }
 }
 
