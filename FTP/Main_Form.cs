@@ -76,15 +76,18 @@ namespace FTP
                 //打开被动模式
                 Log("<控制连接> 发送PASV，进入被动模式");
                 cmdData = "PASV" + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus();
 
                 //计算将要连接的端口号
                 retArray = Regex.Split(retstr, ",");
-                if (retArray[5][2] != ')') retstr = retArray[5].Substring(0, 3);
-                else retstr = retArray[5].Substring(0, 2);
-                dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
+                if (retArray[5][3] == ')')                  //三位数
+                    retstr = retArray[5].Substring(0, 3);
+                else if (retArray[5][2] == ')')             //两位数
+                    retstr = retArray[5].Substring(0, 2);
+                else                                        //一位数
+                    retstr = retArray[5].Substring(0, 1); dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
                 Log("<数据连接> 连接端口" + dataPort);
 
                 //连接端口
@@ -111,7 +114,7 @@ namespace FTP
 
                 Log("<控制连接> 发送ABOR，请服务器断开数据连接");
                 cmdData = "ABOR" + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 GetStatus();
             }
@@ -128,28 +131,45 @@ namespace FTP
 
             OpenDataPort();
 
-            string absFilePath;
-
             //获取文件列表
             Log("<控制连接> 发送LIST，获取文件列表");
             cmdData = "LIST" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+            szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
             GetStatus();
 
 
 
 
-            Log("以下是文件列表：\r\n"+dataStrmRdr.ReadToEnd());
+            //需要解码！！！
+            //Log("以下是文件列表：\r\n" + dataStrmRdr.ReadToEnd());
+
+
 
 
             Folder_Box.Items.Clear();
-            //while ((absFilePath = dataStrmRdr.ReadLine()) != null)
-            //{
-            //    string[] temp = Regex.Split(absFilePath, " ");
-            //    Folder_Box.Items.Add(temp[temp.Length - 1]);
-            //}
+            File_Box.Items.Clear();
 
+            string fileInfo = dataStrmRdr.ReadToEnd();
+            string[] fileLineArray = Regex.Split(fileInfo, "\n");
+            foreach (var Info in fileLineArray)
+            {
+                if (Info == "")
+                {
+                    break;
+                }
+                Regex regex = new Regex("\\s+");
+                string[] fileInfoSplit = regex.Split(Info, 4);
+                string name = fileInfoSplit[fileInfoSplit.Length - 1];  //文件名或文件夹名
+                if (fileInfoSplit[2] == "<DIR>")
+                {
+                    Folder_Box.Items.Add(name);
+                }
+                else
+                {
+                    File_Box.Items.Add(name);
+                }
+            }
             CloseDataPort();
         }
         #endregion
