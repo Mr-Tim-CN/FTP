@@ -94,7 +94,7 @@ namespace FTP
             }
             catch(Exception x)
             {
-                Log(x.Message);
+                Log("<系统提示> " + x.Message);
             }
         }
         #endregion
@@ -117,7 +117,7 @@ namespace FTP
             }
             catch(Exception x)
             {
-                Log(x.Message);
+                Log("<系统提示> " + x.Message);
             }
         }
         #endregion
@@ -183,7 +183,7 @@ namespace FTP
             }
             catch (Exception x)
             {
-                Log(x.Message);
+                Log("<系统提示> " + x.Message);
                 return;
             }
 
@@ -200,7 +200,8 @@ namespace FTP
                 cmdData = "USER " + User_Box.Text + CRLF;
                 szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
+                retstr = GetStatus().Substring(0, 3);
+                if (Convert.ToInt32(retstr) == 501) throw new InvalidOperationException("帐号不合法");
 
                 Log("<控制连接> 发送密码");
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
@@ -211,18 +212,18 @@ namespace FTP
 
                 LoadFolderBox();
 
+                IP_Box.Enabled = false;
+                User_Box.Enabled = false;
+                Pwd_Box.Enabled = false;
+                Anonymous_Check.Enabled = false;
                 Login_Button.Enabled = false;
                 Logout_Button.Enabled = true;
                 Upload_Button.Enabled = true;
                 Download_Button.Enabled = true;
             }
-            catch(InvalidOperationException err)
-            {
-                Log(err.Message);
-            }
             catch(Exception x)
             {
-                Log(x.Message);
+                Log("<系统提示> " + x.Message);
             }
         }
         #endregion
@@ -241,6 +242,13 @@ namespace FTP
             cmdStrmWtr.Close();
             cmdStrmRdr.Close();
 
+            IP_Box.Enabled = true;
+            if (!Anonymous_Check.Checked)
+            {
+                User_Box.Enabled = true;
+                Pwd_Box.Enabled = true;
+            }
+            Anonymous_Check.Enabled = true;
             Login_Button.Enabled = true;
             Logout_Button.Enabled = false;
             Upload_Button.Enabled = false;
