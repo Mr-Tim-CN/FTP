@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace FTP
 {
@@ -15,137 +16,170 @@ namespace FTP
         }
         
         #region 全局变量
+        /// <summary>
+        /// cmd：控制
+        /// data：数据
+        /// </summary>
         private TcpClient cmdServer;
         private TcpClient dataServer;
         private NetworkStream cmdStrmWtr;
         private StreamReader cmdStrmRdr;
         private NetworkStream dataStrmWtr;
         private StreamReader dataStrmRdr;
-        private String cmdData;
+        private string cmdData;
         private byte[] szData;
-        private const String CRLF = "\r\n";
+        private const string CRLF = "\r\n";
         #endregion
 
-        #region 全局函数
-
-        #region 打印日志功能
-
+        #region 打印日志
         /// <summary>
         /// 调用Log(string)可以直接在日志区新增一行日志。
         /// </summary>
-
         private void Log(string logContent)                             //打印日志
         {
             string time = DateTime.Now.ToLocalTime().ToString();
             Log_Box.Text += "[" + time + "]：" + logContent + "\r\n";
         }
-
         private void Log_Box_TextChanged(object sender, EventArgs e)    //将日志区滑至底端
         {
             Log_Box.SelectionStart = Log_Box.Text.Length;
             Log_Box.ScrollToCaret();
         }
-
         #endregion
 
-        private String getSatus()
+        #region 获取控制连接返回的数据
+        private string GetStatus()
         {
-            String ret;
+            string ret;
             try
             {
                 ret = cmdStrmRdr.ReadLine();
-                Log(ret);
+                Log("<控制连接> 返回信息：" + ret);
                 return ret;
             }
             catch (Exception e)
             {
                 Log(e.Message);
             }
-            return "Fail";
+            return "Failed";
         }
+        #endregion
 
-        private void openDataPort()
+        #region 打开被动模式并打开数据连接
+        private void OpenDataPort()
         {
             string retstr;
             string[] retArray;
             int dataPort;
+            try
+            {
+                //打开被动模式
+                Log("<控制连接> 发送PASV，进入被动模式");
+                cmdData = "PASV" + CRLF;
+                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                retstr = GetStatus();
 
-            // Start Passive Mode 
-            cmdData = "PASV" + CRLF; 
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            retstr = this.getSatus();
+                //计算将要连接的端口号
+                retArray = Regex.Split(retstr, ",");
+                if (retArray[5][2] != ')') retstr = retArray[5].Substring(0, 3);
+                else retstr = retArray[5].Substring(0, 2);
+                dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
+                Log("<数据连接> 连接端口" + dataPort);
 
-            // Calculate data's port
-            retArray = Regex.Split(retstr, ",");
-            if (retArray[5][2] != ')') retstr = retArray[5].Substring(0, 3);
-            else retstr = retArray[5].Substring(0, 2);
-            dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
-            Log("Get dataPort=" + dataPort);
-
-
-            //Connect to the dataPort
-            dataServer = new TcpClient(IP_Box.Text, dataPort);
-            dataStrmRdr = new StreamReader(dataServer.GetStream());
-            dataStrmWtr = dataServer.GetStream();
+                //连接端口
+                dataServer = new TcpClient(IP_Box.Text, dataPort);
+                dataStrmRdr = new StreamReader(dataServer.GetStream());
+                dataStrmWtr = dataServer.GetStream();
+            }
+            catch(Exception x)
+            {
+                Log(x.Message);
+            }
         }
-
-        /// <summary>
-        /// 断开数据端口的连接
-        /// </summary>
-        private void closeDataPort()
+        #endregion
+        
+        #region 断开数据连接
+        private void CloseDataPort()
         {
-            dataStrmRdr.Close();
-            dataStrmWtr.Close();
-            this.getSatus();
+            try
+            {
+                Log("<数据连接> 本地关闭数据连接");
+                dataStrmRdr.Close();
+                dataStrmWtr.Close();
+                GetStatus();
 
-            cmdData = "ABOR" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.getSatus();
-
+                Log("<控制连接> 发送ABOR，请服务器断开数据连接");
+                cmdData = "ABOR" + CRLF;
+                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+            }
+            catch(Exception x)
+            {
+                Log(x.Message);
+            }
         }
+        #endregion
 
-
-        private void freshFileBox_Right()
+        #region 加载文件列表
+        private void LoadFolderBox()
         {
 
-            openDataPort();
+            OpenDataPort();
 
             string absFilePath;
 
-            //List
+            //获取文件列表
+            Log("<控制连接> 发送LIST，获取文件列表");
             cmdData = "LIST" + CRLF;
             szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.getSatus();
+            GetStatus();
 
-            File_Box.Items.Clear();
-            while ((absFilePath = dataStrmRdr.ReadLine()) != null)
-            {
-                string[] temp = Regex.Split(absFilePath, " ");
-                File_Box.Items.Add(temp[temp.Length - 1]);
-            }
 
-            closeDataPort();
+
+
+            Log("以下是文件列表：\r\n"+dataStrmRdr.ReadToEnd());
+
+
+            Folder_Box.Items.Clear();
+            //while ((absFilePath = dataStrmRdr.ReadLine()) != null)
+            //{
+            //    string[] temp = Regex.Split(absFilePath, " ");
+            //    Folder_Box.Items.Add(temp[temp.Length - 1]);
+            //}
+
+            CloseDataPort();
         }
-
         #endregion
 
-        #region 登录功能
+        #region 登录
 
-        private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)
+        private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)     //匿名登录
         {
-
+            if (Anonymous_Check.Checked)
+            {
+                User_Box.Text = "anonymous";
+                User_Box.Enabled = false;
+                Pwd_Box.Text = "";
+                Pwd_Box.Enabled = false;
+            }
+            else
+            {
+                User_Box.Text = "";
+                User_Box.Enabled = true;
+                Pwd_Box.Enabled = true;
+            }
         }
 
         private void Login_Button_Click(object sender, EventArgs e)
         {
-            //Cursor cr = Cursor.Current;
-            //Cursor.Current = Cursors.WaitCursor;
             try
             {
+                Log("<控制连接> 尝试连接" + IP_Box.Text + ":21");
                 cmdServer = new TcpClient(IP_Box.Text, 21);     //21是FTP协议规定的控制进程端口号
+                Log("<控制连接> 连接成功");
             }
             catch (Exception x)
             {
@@ -157,71 +191,65 @@ namespace FTP
             {
                 cmdStrmRdr = new StreamReader(cmdServer.GetStream());
                 cmdStrmWtr = cmdServer.GetStream();
-                this.getSatus();
+                GetStatus();                                    //打印连接成功后返回的数据
 
                 string retstr;
 
-                //login
-                cmdData = "USER " + Name_Box.Text + CRLF;
+                //登录
+                Log("<控制连接> 发送用户名");
+                cmdData = "USER " + User_Box.Text + CRLF;
                 szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
-                this.getSatus();
+                GetStatus();
 
+                Log("<控制连接> 发送密码");
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
                 szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
-                retstr = this.getSatus().Substring(0, 3);
+                retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 530) throw new InvalidOperationException("帐号密码错误");
 
-                this.freshFileBox_Right();
+                LoadFolderBox();
 
-                IP_Box.Text = IP_Box.Text + ":";
+                Login_Button.Enabled = false;
+                Logout_Button.Enabled = true;
                 Upload_Button.Enabled = true;
                 Download_Button.Enabled = true;
             }
             catch(InvalidOperationException err)
             {
-                Log("ERROR:" + err.Message);
+                Log(err.Message);
             }
             catch(Exception x)
             {
                 Log(x.Message);
             }
-            finally
-            {
-                //Cursor.Current = cr;
-            }
         }
         #endregion
 
-        #region 断开连接功能
+        #region 断开控制连接
 
         private void Logout_Button_Click(object sender, EventArgs e)
         {
-            Cursor cr = Cursor.Current;
-            Cursor.Current = Cursors.WaitCursor;
-
-            //Logout
-
+            Log("<控制连接> 发送QUIT，请服务器断开控制连接");
             cmdData = "QUIT" + CRLF;
             szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.getSatus();
+            GetStatus();
 
-
+            Log("<控制连接> 本地断开控制连接");
             cmdStrmWtr.Close();
             cmdStrmRdr.Close();
 
-            IP_Box.Text = "";
-            Upload_Button.Enabled = true;
-            Download_Button.Enabled = true;
-            Log_Box.Text = "";
-            Cursor.Current = cr;
+            Login_Button.Enabled = true;
+            Logout_Button.Enabled = false;
+            Upload_Button.Enabled = false;
+            Download_Button.Enabled = false;
         }
 
         #endregion
 
-        #region 上传功能
+        #region 上传
 
         private void Upload_Button_Click(object sender, EventArgs e)
         {
@@ -230,7 +258,7 @@ namespace FTP
 
         #endregion
 
-        #region 下载功能
+        #region 下载
 
         private void Download_Button_Click(object sender, EventArgs e)
         {
