@@ -310,7 +310,48 @@ namespace FTP
 
         private void Upload_Button_Click(object sender, EventArgs e)
         {
+            var fileContent = string.Empty;
+            var filePath = string.Empty;
 
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    //Get the path of specified file
+                    filePath = openFileDialog.FileName;
+                }
+                Cursor cr = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
+               
+                string fileName = Path.GetFileName(filePath);
+
+                this.OpenDataPort();
+
+                cmdData = "STOR " + fileName + CRLF;
+                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                this.GetStatus();
+
+                FileStream fstrm = new FileStream(filePath, FileMode.Open);
+                byte[] fbytes = new byte[1030];
+                int cnt = 0;
+                while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
+                {
+                    dataStrmWtr.Write(fbytes, 0, cnt);
+                }
+                fstrm.Close();
+
+                this.CloseDataPort();
+
+                this.LoadFolderBox();
+
+                Cursor.Current = cr;
+            }
         }
 
         #endregion
