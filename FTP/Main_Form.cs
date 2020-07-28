@@ -322,10 +322,44 @@ namespace FTP
 
         private void Download_Button_Click(object sender, EventArgs e)
         {
+            if (Folder_Box.Text == "" || File_Box.SelectedIndex < 0)
+            {
+                MessageBox.Show("请选择目标文件和下载路径", "ERROR");
+                return;
+            }
 
+            Cursor cr = Cursor.Current;
+            Cursor.Current = Cursors.WaitCursor;
+
+            string fileName = File_Box.Items[File_Box.SelectedIndex].ToString();
+            string filePath = Folder_Box.Text + "\\" + fileName;
+
+            this.OpenDataPort();
+
+            cmdData = "RETR " + fileName + CRLF;
+            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+            cmdStrmWtr.Write(szData, 0, szData.Length);
+            this.GetStatus();
+
+            FileStream fstrm = new FileStream(filePath, FileMode.OpenOrCreate);
+            char[] fchars = new char[1030];
+            byte[] fbytes = new byte[1030];
+            int cnt = 0;
+            while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+            {
+                fstrm.Write(fbytes, 0, cnt);
+            }
+            fstrm.Close();
+
+            this.CloseDataPort();
+
+            this.LoadFolderBox();
+
+            Cursor.Current = cr;
         }
 
         #endregion
+
 
     }
 }
