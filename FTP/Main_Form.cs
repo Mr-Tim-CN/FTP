@@ -141,15 +141,6 @@ namespace FTP
             cmdStrmWtr.Write(szData, 0, szData.Length);
             GetStatus();
 
-
-
-
-            //需要解码！！！
-            //Log("以下是文件列表：\r\n" + dataStrmRdr.ReadToEnd());
-
-
-
-
             Folder_Box.Items.Clear();
             File_Box.Items.Clear();
 
@@ -241,19 +232,25 @@ namespace FTP
                 //登录
                 Log("<控制连接> 发送用户名");
                 cmdData = "USER " + User_Box.Text + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 501) throw new InvalidOperationException("帐号不合法");
 
                 Log("<控制连接> 发送密码");
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 530) throw new InvalidOperationException("帐号密码错误");
 
-                LoadFolderBox();
+                Log("<控制连接> 要求服务器使用UTF8编码");
+                cmdData = "OPTS UTF8 ON" + CRLF;
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                LoadFolderBox();        //加载文件列表
 
                 IP_Box.Enabled = false;
                 User_Box.Enabled = false;
