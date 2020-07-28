@@ -42,9 +42,10 @@
             this.label4 = new System.Windows.Forms.Label();
             this.IP_Box = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
             this.Log_Box = new System.Windows.Forms.TextBox();
             this.Folder_Box = new System.Windows.Forms.ListBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // Upload_Button
@@ -53,7 +54,7 @@
             this.Upload_Button.Location = new System.Drawing.Point(302, 209);
             this.Upload_Button.Name = "Upload_Button";
             this.Upload_Button.Size = new System.Drawing.Size(154, 23);
-            this.Upload_Button.TabIndex = 0;
+            this.Upload_Button.TabIndex = 7;
             this.Upload_Button.Text = "选择文件上传至该文件夹";
             this.Upload_Button.UseVisualStyleBackColor = true;
             this.Upload_Button.Click += new System.EventHandler(this.Upload_Button_Click);
@@ -64,7 +65,7 @@
             this.Download_Button.Location = new System.Drawing.Point(580, 209);
             this.Download_Button.Name = "Download_Button";
             this.Download_Button.Size = new System.Drawing.Size(154, 23);
-            this.Download_Button.TabIndex = 1;
+            this.Download_Button.TabIndex = 9;
             this.Download_Button.Text = "下载所选的文件";
             this.Download_Button.UseVisualStyleBackColor = true;
             this.Download_Button.Click += new System.EventHandler(this.Download_Button_Click);
@@ -72,11 +73,12 @@
             // File_Box
             // 
             this.File_Box.FormattingEnabled = true;
+            this.File_Box.HorizontalScrollbar = true;
             this.File_Box.ItemHeight = 12;
             this.File_Box.Location = new System.Drawing.Point(550, 43);
             this.File_Box.Name = "File_Box";
             this.File_Box.Size = new System.Drawing.Size(213, 148);
-            this.File_Box.TabIndex = 2;
+            this.File_Box.TabIndex = 8;
             // 
             // label1
             // 
@@ -92,7 +94,7 @@
             this.User_Box.Location = new System.Drawing.Point(111, 84);
             this.User_Box.Name = "User_Box";
             this.User_Box.Size = new System.Drawing.Size(100, 21);
-            this.User_Box.TabIndex = 5;
+            this.User_Box.TabIndex = 1;
             this.User_Box.Text = "testuser";
             // 
             // Pwd_Box
@@ -100,7 +102,7 @@
             this.Pwd_Box.Location = new System.Drawing.Point(111, 129);
             this.Pwd_Box.Name = "Pwd_Box";
             this.Pwd_Box.Size = new System.Drawing.Size(100, 21);
-            this.Pwd_Box.TabIndex = 6;
+            this.Pwd_Box.TabIndex = 2;
             this.Pwd_Box.Text = "Test123123";
             // 
             // Login_Button
@@ -108,7 +110,7 @@
             this.Login_Button.Location = new System.Drawing.Point(136, 171);
             this.Login_Button.Name = "Login_Button";
             this.Login_Button.Size = new System.Drawing.Size(75, 23);
-            this.Login_Button.TabIndex = 7;
+            this.Login_Button.TabIndex = 4;
             this.Login_Button.Text = "登录";
             this.Login_Button.UseVisualStyleBackColor = true;
             this.Login_Button.Click += new System.EventHandler(this.Login_Button_Click);
@@ -119,7 +121,7 @@
             this.Anonymous_Check.Location = new System.Drawing.Point(53, 175);
             this.Anonymous_Check.Name = "Anonymous_Check";
             this.Anonymous_Check.Size = new System.Drawing.Size(72, 16);
-            this.Anonymous_Check.TabIndex = 8;
+            this.Anonymous_Check.TabIndex = 3;
             this.Anonymous_Check.Text = "匿名登录";
             this.Anonymous_Check.UseVisualStyleBackColor = true;
             this.Anonymous_Check.CheckedChanged += new System.EventHandler(this.Anonymous_Check_CheckedChanged);
@@ -148,7 +150,7 @@
             this.Logout_Button.Location = new System.Drawing.Point(53, 209);
             this.Logout_Button.Name = "Logout_Button";
             this.Logout_Button.Size = new System.Drawing.Size(158, 23);
-            this.Logout_Button.TabIndex = 11;
+            this.Logout_Button.TabIndex = 5;
             this.Logout_Button.Text = "断开连接";
             this.Logout_Button.UseVisualStyleBackColor = true;
             this.Logout_Button.Click += new System.EventHandler(this.Logout_Button_Click);
@@ -167,7 +169,7 @@
             this.IP_Box.Location = new System.Drawing.Point(111, 43);
             this.IP_Box.Name = "IP_Box";
             this.IP_Box.Size = new System.Drawing.Size(100, 21);
-            this.IP_Box.TabIndex = 13;
+            this.IP_Box.TabIndex = 0;
             this.IP_Box.Text = "47.115.21.139";
             // 
             // label5
@@ -179,43 +181,47 @@
             this.label5.TabIndex = 14;
             this.label5.Text = "选择文件夹：";
             // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 249);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(41, 12);
-            this.label6.TabIndex = 16;
-            this.label6.Text = "日志：";
-            // 
             // Log_Box
             // 
-            this.Log_Box.Location = new System.Drawing.Point(14, 274);
+            this.Log_Box.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(41)))), ((int)(((byte)(49)))), ((int)(((byte)(52)))));
+            this.Log_Box.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(226)))), ((int)(((byte)(228)))));
+            this.Log_Box.Location = new System.Drawing.Point(6, 20);
             this.Log_Box.Multiline = true;
             this.Log_Box.Name = "Log_Box";
             this.Log_Box.ReadOnly = true;
             this.Log_Box.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.Log_Box.Size = new System.Drawing.Size(793, 161);
-            this.Log_Box.TabIndex = 17;
+            this.Log_Box.Size = new System.Drawing.Size(783, 170);
+            this.Log_Box.TabIndex = 10;
+            this.Log_Box.TabStop = false;
             this.Log_Box.TextChanged += new System.EventHandler(this.Log_Box_TextChanged);
             // 
             // Folder_Box
             // 
             this.Folder_Box.FormattingEnabled = true;
+            this.Folder_Box.HorizontalScrollbar = true;
             this.Folder_Box.ItemHeight = 12;
             this.Folder_Box.Location = new System.Drawing.Point(274, 43);
             this.Folder_Box.Name = "Folder_Box";
             this.Folder_Box.Size = new System.Drawing.Size(212, 148);
-            this.Folder_Box.TabIndex = 18;
+            this.Folder_Box.TabIndex = 6;
+            // 
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.Log_Box);
+            this.groupBox1.Location = new System.Drawing.Point(12, 250);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(795, 196);
+            this.groupBox1.TabIndex = 17;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "信息";
             // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(819, 458);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.Folder_Box);
-            this.Controls.Add(this.Log_Box);
-            this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.IP_Box);
             this.Controls.Add(this.label4);
@@ -230,9 +236,14 @@
             this.Controls.Add(this.File_Box);
             this.Controls.Add(this.Download_Button);
             this.Controls.Add(this.Upload_Button);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Main_Form";
             this.ShowIcon = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "FTP客户端";
+            this.groupBox1.ResumeLayout(false);
+            this.groupBox1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -254,9 +265,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox IP_Box;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox Log_Box;
         private System.Windows.Forms.ListBox Folder_Box;
+        private System.Windows.Forms.GroupBox groupBox1;
     }
 }
 

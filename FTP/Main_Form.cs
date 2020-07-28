@@ -91,14 +91,15 @@ namespace FTP
                     retstr = retArray[5].Substring(0, 3);
 
                 dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
-                Log("<数据连接> 连接端口" + dataPort);
+                Log("<数据连接> 新建一个连接，尝试连接" + IP_Box.Text + ":" + dataPort);
 
                 //连接端口
                 dataServer = new TcpClient(IP_Box.Text, dataPort);
                 dataStrmRdr = new StreamReader(dataServer.GetStream());
                 dataStrmWtr = dataServer.GetStream();
+                Log("<数据连接> 连接成功");
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
             }
@@ -121,7 +122,7 @@ namespace FTP
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 GetStatus();
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
             }
@@ -170,7 +171,30 @@ namespace FTP
         }
         #endregion
 
-        #region 登录
+        #region 断开控制连接
+        private void CloseCmdPort()
+        {
+            try
+            {
+                Log("<控制连接> 发送QUIT，请服务器断开控制连接");
+                cmdData = "QUIT" + CRLF;
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+
+            Log("<控制连接> 本地断开控制连接");
+            cmdStrmWtr.Close();
+            cmdStrmRdr.Close();
+
+        }
+        #endregion
+
+        #region 登录按钮
 
         private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)     //匿名登录
         {
@@ -194,7 +218,7 @@ namespace FTP
             Log("----------------------------------------------------------");
             try
             {
-                Log("<控制连接> 尝试连接" + IP_Box.Text + ":21");
+                Log("<控制连接> 新建一个连接，尝试连接" + IP_Box.Text + ":21");
                 cmdServer = new TcpClient(IP_Box.Text, 21);     //21是FTP协议规定的控制进程端口号
                 Log("<控制连接> 连接成功");
             }
@@ -204,51 +228,39 @@ namespace FTP
                 return;
             }
 
-            try 
+            try
             {
                 cmdStrmRdr = new StreamReader(cmdServer.GetStream());
                 cmdStrmWtr = cmdServer.GetStream();
 
                 //避免连接上不受支持的服务器
                 string[] x = GetStatus().Split(' ');
-                if (x[1] != "Microsoft")
-                {
-                    Log("<系统提示> 该程序只支持IIS，请连接受支持的服务器");
+                if (x[1] != "Microsoft") throw new InvalidOperationException("该程序只支持IIS，请连接受支持的服务器");
 
-                    Log("<控制连接> 发送QUIT，请服务器断开控制连接");
-                    cmdData = "QUIT" + CRLF;
-                    szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-                    cmdStrmWtr.Write(szData, 0, szData.Length);
-                    GetStatus();
-
-                    Log("<控制连接> 本地断开控制连接");
-                    cmdStrmWtr.Close();
-                    cmdStrmRdr.Close();
-
-                    return;
-                }
                 string retstr;
 
                 //登录
-                Log("<控制连接> 发送用户名");
+
+                Log("<控制连接> 发送USER " + User_Box.Text);
                 cmdData = "USER " + User_Box.Text + CRLF;
                 szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 501) throw new InvalidOperationException("帐号不合法");
 
-                Log("<控制连接> 发送密码");
+                Log("<控制连接> 发送PASS " + Pwd_Box.Text);
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
                 szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 530) throw new InvalidOperationException("帐号密码错误");
 
-                Log("<控制连接> 要求服务器使用UTF8编码");
+                Log("<控制连接> 发送OPTS UTF8 ON，要求服务器使用UTF8编码");
                 cmdData = "OPTS UTF8 ON" + CRLF;
                 szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
+                retstr = GetStatus().Substring(0, 3);
+                if (Convert.ToInt32(retstr) == 501) Log("服务器不允许使用UTF8传输数据，文件名显示可能会有乱码");
 
                 LoadFolderBox();        //加载文件列表
 
@@ -261,33 +273,19 @@ namespace FTP
                 Upload_Button.Enabled = true;
                 Download_Button.Enabled = true;
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
+                CloseCmdPort();
             }
         }
         #endregion
 
-        #region 断开控制连接
+        #region 断开连接按钮
 
         private void Logout_Button_Click(object sender, EventArgs e)
         {
-            try
-            {
-                Log("<控制连接> 发送QUIT，请服务器断开控制连接");
-                cmdData = "QUIT" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
-            }
-            catch (Exception x)
-            {
-                Log("<系统提示> " + x.Message);
-            }
-
-            Log("<控制连接> 本地断开控制连接");
-            cmdStrmWtr.Close();
-            cmdStrmRdr.Close();
+            CloseCmdPort();
 
             IP_Box.Enabled = true;
             if (!Anonymous_Check.Checked)
@@ -306,7 +304,7 @@ namespace FTP
 
         #endregion
 
-        #region 上传
+        #region 上传按钮
 
         private void Upload_Button_Click(object sender, EventArgs e)
         {
@@ -315,7 +313,7 @@ namespace FTP
 
         #endregion
 
-        #region 下载
+        #region 下载按钮
 
         private void Download_Button_Click(object sender, EventArgs e)
         {
