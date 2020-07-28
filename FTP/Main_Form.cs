@@ -82,12 +82,15 @@ namespace FTP
 
                 //计算将要连接的端口号
                 retArray = Regex.Split(retstr, ",");
-                if (retArray[5][3] == ')')                  //三位数
-                    retstr = retArray[5].Substring(0, 3);
-                else if (retArray[5][2] == ')')             //两位数
+
+                if (retArray[5][1] == ')')                  //1位数
+                    retstr = retArray[5].Substring(0, 1);
+                else if (retArray[5][2] == ')')             //2位数
                     retstr = retArray[5].Substring(0, 2);
-                else                                        //一位数
-                    retstr = retArray[5].Substring(0, 1); dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
+                else                                        //3位数
+                    retstr = retArray[5].Substring(0, 3);
+
+                dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
                 Log("<数据连接> 连接端口" + dataPort);
 
                 //连接端口
@@ -107,7 +110,7 @@ namespace FTP
         {
             try
             {
-                Log("<数据连接> 本地关闭数据连接");
+                Log("<数据连接> 本地断开数据连接");
                 dataStrmRdr.Close();
                 dataStrmWtr.Close();
                 GetStatus();
@@ -150,6 +153,7 @@ namespace FTP
             Folder_Box.Items.Clear();
             File_Box.Items.Clear();
 
+            Log("<数据连接> 正在接收文件列表");
             string fileInfo = dataStrmRdr.ReadToEnd();
             string[] fileLineArray = Regex.Split(fileInfo, "\n");
             foreach (var Info in fileLineArray)
@@ -170,6 +174,7 @@ namespace FTP
                     File_Box.Items.Add(name);
                 }
             }
+            Log("<数据连接> 文件列表的数据处理完毕");
             CloseDataPort();
         }
         #endregion
@@ -195,6 +200,7 @@ namespace FTP
 
         private void Login_Button_Click(object sender, EventArgs e)
         {
+            Log("----------------------------------------------------------");
             try
             {
                 Log("<控制连接> 尝试连接" + IP_Box.Text + ":21");
@@ -211,8 +217,25 @@ namespace FTP
             {
                 cmdStrmRdr = new StreamReader(cmdServer.GetStream());
                 cmdStrmWtr = cmdServer.GetStream();
-                GetStatus();                                    //打印连接成功后返回的数据
 
+                //避免连接上不受支持的服务器
+                string[] x = GetStatus().Split(' ');
+                if (x[1] != "Microsoft")
+                {
+                    Log("<系统提示> 该程序只支持IIS，请连接受支持的服务器");
+
+                    Log("<控制连接> 发送QUIT，请服务器断开控制连接");
+                    cmdData = "QUIT" + CRLF;
+                    szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                    cmdStrmWtr.Write(szData, 0, szData.Length);
+                    GetStatus();
+
+                    Log("<控制连接> 本地断开控制连接");
+                    cmdStrmWtr.Close();
+                    cmdStrmRdr.Close();
+
+                    return;
+                }
                 string retstr;
 
                 //登录
@@ -252,11 +275,18 @@ namespace FTP
 
         private void Logout_Button_Click(object sender, EventArgs e)
         {
-            Log("<控制连接> 发送QUIT，请服务器断开控制连接");
-            cmdData = "QUIT" + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            GetStatus();
+            try
+            {
+                Log("<控制连接> 发送QUIT，请服务器断开控制连接");
+                cmdData = "QUIT" + CRLF;
+                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
 
             Log("<控制连接> 本地断开控制连接");
             cmdStrmWtr.Close();
@@ -273,6 +303,8 @@ namespace FTP
             Logout_Button.Enabled = false;
             Upload_Button.Enabled = false;
             Download_Button.Enabled = false;
+            File_Box.Items.Clear();
+            Folder_Box.Items.Clear();
         }
 
         #endregion
