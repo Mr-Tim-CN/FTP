@@ -324,11 +324,17 @@ namespace FTP
                 {
                     //Get the path of specified file
                     filePath = openFileDialog.FileName;
+                    
                 }
+               
+            }
+
+            string fileName = Path.GetFileName(filePath);
+
+            if (fileName != "" && filePath != "")
+            {
                 Cursor cr = Cursor.Current;
                 Cursor.Current = Cursors.WaitCursor;
-               
-                string fileName = Path.GetFileName(filePath);
 
                 this.OpenDataPort();
 
@@ -342,7 +348,7 @@ namespace FTP
                 int cnt = 0;
                 while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
                 {
-                    dataStrmWtr.Write(fbytes, 0, cnt);
+                    dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
                 }
                 fstrm.Close();
 
@@ -352,6 +358,8 @@ namespace FTP
 
                 Cursor.Current = cr;
             }
+
+            else MessageBox.Show("请重新选择正确路径");
         }
 
         #endregion
