@@ -366,40 +366,45 @@ namespace FTP
 
         private void Download_Button_Click(object sender, EventArgs e)
         {
-            if (Folder_Box.Text == "" || File_Box.SelectedIndex < 0)
+            string fileName1 = File_Box.SelectedItem.ToString();
+            string fileName = fileName1.Substring(0, fileName1.Length - 1);
+            string filePath = "";
+            FolderBrowserDialog P_File_Folder = new FolderBrowserDialog();
+            if (P_File_Folder.ShowDialog() == DialogResult.OK)
             {
-                MessageBox.Show("请选择目标文件和下载路径", "ERROR");
-                return;
+                filePath = P_File_Folder.SelectedPath + "\\" + fileName;
             }
 
-            Cursor cr = Cursor.Current;
-            Cursor.Current = Cursors.WaitCursor;
 
-            string fileName = File_Box.Items[File_Box.SelectedIndex].ToString();
-            string filePath = Folder_Box.Text + "\\" + fileName;
-
-            this.OpenDataPort();
-
-            cmdData = "RETR " + fileName + CRLF;
-            szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.GetStatus();
-
-            FileStream fstrm = new FileStream(filePath, FileMode.OpenOrCreate);
-            char[] fchars = new char[1030];
-            byte[] fbytes = new byte[1030];
-            int cnt = 0;
-            while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+            if (fileName != "" && filePath != "")
             {
-                fstrm.Write(fbytes, 0, cnt);
+                Cursor cr = Cursor.Current;
+                Cursor.Current = Cursors.WaitCursor;
+
+                this.OpenDataPort();
+
+                cmdData = "RETR " + fileName + CRLF;
+                szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                this.GetStatus();
+                MessageBox.Show(filePath);
+
+                FileStream fstrm = new FileStream(filePath , FileMode.Create);
+                
+                char[] fchars = new char[1030];
+                byte[] fbytes = new byte[1030];
+                int cnt = 0;
+                while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+                {
+                    fstrm.Write(fbytes, 0, cnt);
+                }
+                fstrm.Close();
+
+                this.CloseDataPort();
+
+                Cursor.Current = cr;
             }
-            fstrm.Close();
-
-            this.CloseDataPort();
-
-            this.LoadFolderBox();
-
-            Cursor.Current = cr;
+            else MessageBox.Show("请重新选择正确路径");
         }
 
 
