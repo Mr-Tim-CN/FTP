@@ -378,6 +378,7 @@ namespace FTP
 
             if (fileName != "" && filePath != "")
             {
+                Log("<系统提示> 文件开始下载");
                 Cursor cr = Cursor.Current;
                 Cursor.Current = Cursors.WaitCursor;
 
@@ -398,7 +399,9 @@ namespace FTP
                 {
                     fstrm.Write(fbytes, 0, cnt);
                 }
+
                 fstrm.Close();
+                Log("<系统提示> 文件下载成功");
 
                 this.CloseDataPort();
 
