@@ -413,10 +413,8 @@ namespace FTP
             }
             catch(Exception x)
             {
-                ;
+                Log("<系统提示> " + x.Message);
             }
-
-            
         }
 
 
