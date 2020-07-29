@@ -51,9 +51,9 @@
             // Upload_Button
             // 
             this.Upload_Button.Enabled = false;
-            this.Upload_Button.Location = new System.Drawing.Point(302, 209);
+            this.Upload_Button.Location = new System.Drawing.Point(550, 187);
             this.Upload_Button.Name = "Upload_Button";
-            this.Upload_Button.Size = new System.Drawing.Size(154, 23);
+            this.Upload_Button.Size = new System.Drawing.Size(213, 23);
             this.Upload_Button.TabIndex = 7;
             this.Upload_Button.Text = "选择文件上传至该文件夹";
             this.Upload_Button.UseVisualStyleBackColor = true;
@@ -62,9 +62,9 @@
             // Download_Button
             // 
             this.Download_Button.Enabled = false;
-            this.Download_Button.Location = new System.Drawing.Point(580, 209);
+            this.Download_Button.Location = new System.Drawing.Point(550, 216);
             this.Download_Button.Name = "Download_Button";
-            this.Download_Button.Size = new System.Drawing.Size(154, 23);
+            this.Download_Button.Size = new System.Drawing.Size(213, 23);
             this.Download_Button.TabIndex = 9;
             this.Download_Button.Text = "下载所选的文件";
             this.Download_Button.UseVisualStyleBackColor = true;
@@ -77,7 +77,7 @@
             this.File_Box.ItemHeight = 12;
             this.File_Box.Location = new System.Drawing.Point(550, 43);
             this.File_Box.Name = "File_Box";
-            this.File_Box.Size = new System.Drawing.Size(213, 148);
+            this.File_Box.Size = new System.Drawing.Size(213, 136);
             this.File_Box.TabIndex = 8;
             // 
             // label1
@@ -202,8 +202,9 @@
             this.Folder_Box.ItemHeight = 12;
             this.Folder_Box.Location = new System.Drawing.Point(274, 43);
             this.Folder_Box.Name = "Folder_Box";
-            this.Folder_Box.Size = new System.Drawing.Size(212, 148);
+            this.Folder_Box.Size = new System.Drawing.Size(212, 196);
             this.Folder_Box.TabIndex = 6;
+            this.Folder_Box.SelectedIndexChanged += new System.EventHandler(this.Folder_Box_SelectedIndexChanged);
             // 
             // groupBox1
             // 
