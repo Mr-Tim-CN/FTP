@@ -76,7 +76,7 @@ namespace FTP
                 //打开被动模式
                 Log("<控制连接> 发送PASV，进入被动模式");
                 cmdData = "PASV" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus();
 
@@ -118,7 +118,7 @@ namespace FTP
 
                 Log("<控制连接> 发送ABOR，请服务器断开数据连接");
                 cmdData = "ABOR" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 GetStatus();
             }
@@ -138,7 +138,7 @@ namespace FTP
             //获取文件列表
             Log("<控制连接> 发送LIST，获取文件列表");
             cmdData = "LIST" + CRLF;
-            szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+            szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
             GetStatus();
 
@@ -178,7 +178,7 @@ namespace FTP
             {
                 Log("<控制连接> 发送QUIT，请服务器断开控制连接");
                 cmdData = "QUIT" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 GetStatus();
             }
@@ -243,21 +243,21 @@ namespace FTP
 
                 Log("<控制连接> 发送USER " + User_Box.Text);
                 cmdData = "USER " + User_Box.Text + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 501) throw new InvalidOperationException("帐号不合法");
 
                 Log("<控制连接> 发送PASS " + Pwd_Box.Text);
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 530) throw new InvalidOperationException("帐号密码错误");
 
                 Log("<控制连接> 发送OPTS UTF8 ON，要求服务器使用UTF8编码");
                 cmdData = "OPTS UTF8 ON" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 501) Log("服务器不允许使用UTF8传输数据，文件名显示可能会有乱码");
@@ -337,7 +337,7 @@ namespace FTP
                 this.OpenDataPort();
 
                 cmdData = "STOR " + fileName + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 this.GetStatus();
 
@@ -381,7 +381,7 @@ namespace FTP
             this.OpenDataPort();
 
             cmdData = "RETR " + fileName + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+            szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
             this.GetStatus();
 
@@ -402,8 +402,60 @@ namespace FTP
             Cursor.Current = cr;
         }
 
+
         #endregion
 
+        private void Folder_Box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Folder_Box.SelectedItem == null) throw new Exception("未选择文件夹");
+                
+                OpenDataPort();
 
+                Log("<控制连接> 发送CWD，获取文件列表");
+                cmdData = "CWD " + Folder_Box.SelectedItem.ToString()+ "\n";
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Log("<控制连接> 发送LIST，获取文件列表");
+                cmdData = "LIST" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Folder_Box.Items.Clear();
+                File_Box.Items.Clear();
+
+                Log("<数据连接> 正在接收文件列表");
+                string fileInfo = dataStrmRdr.ReadToEnd();
+                string[] fileLineArray = Regex.Split(fileInfo, "\n");
+                foreach (var Info in fileLineArray)
+                {
+                    if (Info == "")
+                    {
+                        break;
+                    }
+                    Regex regex = new Regex("\\s+");
+                    string[] fileInfoSplit = regex.Split(Info, 4);
+                    string name = fileInfoSplit[fileInfoSplit.Length - 1];  //文件名或文件夹名
+                    if (fileInfoSplit[2] == "<DIR>")
+                    {
+                        Folder_Box.Items.Add(name);
+                    }
+                    else
+                    {
+                        File_Box.Items.Add(name);
+                    }
+                }
+                Log("<数据连接> 文件列表的数据处理完毕");
+                CloseDataPort();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+        }
     }
 }
