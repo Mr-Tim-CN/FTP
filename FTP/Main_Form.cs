@@ -260,7 +260,7 @@ namespace FTP
                 szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
-                if (Convert.ToInt32(retstr) == 501) Log("服务器不允许使用UTF8传输数据，文件名显示可能会有乱码");
+                if (Convert.ToInt32(retstr) == 501) Log("<系统提示> 服务器不允许使用UTF8传输数据，程序可能无法正常运行");
 
                 LoadFolderBox();        //加载文件列表
 
@@ -270,6 +270,7 @@ namespace FTP
                 Anonymous_Check.Enabled = false;
                 Login_Button.Enabled = false;
                 Logout_Button.Enabled = true;
+                Back_Button.Enabled = true;
                 Upload_Button.Enabled = true;
                 Download_Button.Enabled = true;
             }
@@ -294,6 +295,7 @@ namespace FTP
                 Pwd_Box.Enabled = true;
             }
             Anonymous_Check.Enabled = true;
+            Back_Button.Enabled = false;
             Login_Button.Enabled = true;
             Logout_Button.Enabled = false;
             Upload_Button.Enabled = false;
@@ -302,6 +304,80 @@ namespace FTP
             Folder_Box.Items.Clear();
         }
 
+        #endregion
+
+        #region 选择文件夹控件
+        private void Folder_Box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Folder_Box.SelectedItem == null) throw new Exception("未选择文件夹");
+
+                OpenDataPort();
+
+                Log("<控制连接> 发送CWD，获取文件列表");
+                cmdData = "CWD " + Folder_Box.SelectedItem.ToString() + "\n";
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Log("<控制连接> 发送LIST，获取文件列表");
+                cmdData = "LIST" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Folder_Box.Items.Clear();
+                File_Box.Items.Clear();
+
+                Log("<数据连接> 正在接收文件列表");
+                string fileInfo = dataStrmRdr.ReadToEnd();
+                string[] fileLineArray = Regex.Split(fileInfo, "\n");
+                foreach (var Info in fileLineArray)
+                {
+                    if (Info == "")
+                    {
+                        break;
+                    }
+                    Regex regex = new Regex("\\s+");
+                    string[] fileInfoSplit = regex.Split(Info, 4);
+                    string name = fileInfoSplit[fileInfoSplit.Length - 1];  //文件名或文件夹名
+                    if (fileInfoSplit[2] == "<DIR>")
+                    {
+                        Folder_Box.Items.Add(name);
+                    }
+                    else
+                    {
+                        File_Box.Items.Add(name);
+                    }
+                }
+                Log("<数据连接> 文件列表的数据处理完毕");
+                CloseDataPort();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+        }
+        #endregion
+
+        #region 返回上级菜单按钮
+        private void Back_Button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Log("<控制连接> 发送CDUP，返回上级菜单");
+                cmdData = "CDUP" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+                LoadFolderBox();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+        }
         #endregion
 
         #region 上传按钮
@@ -413,57 +489,5 @@ namespace FTP
 
         #endregion
 
-        private void Folder_Box_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if (Folder_Box.SelectedItem == null) throw new Exception("未选择文件夹");
-                
-                OpenDataPort();
-
-                Log("<控制连接> 发送CWD，获取文件列表");
-                cmdData = "CWD " + Folder_Box.SelectedItem.ToString()+ "\n";
-                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
-
-                Log("<控制连接> 发送LIST，获取文件列表");
-                cmdData = "LIST" + CRLF;
-                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
-
-                Folder_Box.Items.Clear();
-                File_Box.Items.Clear();
-
-                Log("<数据连接> 正在接收文件列表");
-                string fileInfo = dataStrmRdr.ReadToEnd();
-                string[] fileLineArray = Regex.Split(fileInfo, "\n");
-                foreach (var Info in fileLineArray)
-                {
-                    if (Info == "")
-                    {
-                        break;
-                    }
-                    Regex regex = new Regex("\\s+");
-                    string[] fileInfoSplit = regex.Split(Info, 4);
-                    string name = fileInfoSplit[fileInfoSplit.Length - 1];  //文件名或文件夹名
-                    if (fileInfoSplit[2] == "<DIR>")
-                    {
-                        Folder_Box.Items.Add(name);
-                    }
-                    else
-                    {
-                        File_Box.Items.Add(name);
-                    }
-                }
-                Log("<数据连接> 文件列表的数据处理完毕");
-                CloseDataPort();
-            }
-            catch (Exception x)
-            {
-                Log("<系统提示> " + x.Message);
-            }
-        }
     }
 }

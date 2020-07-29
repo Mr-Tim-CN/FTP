@@ -45,6 +45,7 @@
             this.Log_Box = new System.Windows.Forms.TextBox();
             this.Folder_Box = new System.Windows.Forms.ListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.Back_Button = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -54,7 +55,7 @@
             this.Upload_Button.Location = new System.Drawing.Point(550, 187);
             this.Upload_Button.Name = "Upload_Button";
             this.Upload_Button.Size = new System.Drawing.Size(213, 23);
-            this.Upload_Button.TabIndex = 7;
+            this.Upload_Button.TabIndex = 9;
             this.Upload_Button.Text = "选择文件上传至该文件夹";
             this.Upload_Button.UseVisualStyleBackColor = true;
             this.Upload_Button.Click += new System.EventHandler(this.Upload_Button_Click);
@@ -65,7 +66,7 @@
             this.Download_Button.Location = new System.Drawing.Point(550, 216);
             this.Download_Button.Name = "Download_Button";
             this.Download_Button.Size = new System.Drawing.Size(213, 23);
-            this.Download_Button.TabIndex = 9;
+            this.Download_Button.TabIndex = 10;
             this.Download_Button.Text = "下载所选的文件";
             this.Download_Button.UseVisualStyleBackColor = true;
             this.Download_Button.Click += new System.EventHandler(this.Download_Button_Click);
@@ -197,12 +198,13 @@
             // 
             // Folder_Box
             // 
+            this.Folder_Box.Cursor = System.Windows.Forms.Cursors.Hand;
             this.Folder_Box.FormattingEnabled = true;
             this.Folder_Box.HorizontalScrollbar = true;
             this.Folder_Box.ItemHeight = 12;
             this.Folder_Box.Location = new System.Drawing.Point(274, 43);
             this.Folder_Box.Name = "Folder_Box";
-            this.Folder_Box.Size = new System.Drawing.Size(212, 196);
+            this.Folder_Box.Size = new System.Drawing.Size(212, 160);
             this.Folder_Box.TabIndex = 6;
             this.Folder_Box.SelectedIndexChanged += new System.EventHandler(this.Folder_Box_SelectedIndexChanged);
             // 
@@ -216,11 +218,23 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "信息";
             // 
+            // Back_Button
+            // 
+            this.Back_Button.Enabled = false;
+            this.Back_Button.Location = new System.Drawing.Point(274, 216);
+            this.Back_Button.Name = "Back_Button";
+            this.Back_Button.Size = new System.Drawing.Size(212, 23);
+            this.Back_Button.TabIndex = 7;
+            this.Back_Button.Text = "返回上级菜单";
+            this.Back_Button.UseVisualStyleBackColor = true;
+            this.Back_Button.Click += new System.EventHandler(this.Back_Button_Click);
+            // 
             // Main_Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(819, 458);
+            this.Controls.Add(this.Back_Button);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.Folder_Box);
             this.Controls.Add(this.label5);
@@ -269,6 +283,7 @@
         private System.Windows.Forms.TextBox Log_Box;
         private System.Windows.Forms.ListBox Folder_Box;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button Back_Button;
     }
 }
 
