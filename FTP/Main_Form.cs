@@ -444,6 +444,7 @@ namespace FTP
         {
             try
             {
+                if (File_Box.SelectedItem == null) throw new Exception("未选择文件");
                 string fileName1 = File_Box.SelectedItem.ToString();
                 string fileName = fileName1.Substring(0, fileName1.Length - 1);
                 string filePath = "";
