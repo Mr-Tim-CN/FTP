@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Net;
 using System.Text;
 
 namespace FTP
@@ -76,7 +77,7 @@ namespace FTP
                 //打开被动模式
                 Log("<控制连接> 发送PASV，进入被动模式");
                 cmdData = "PASV" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus();
 
@@ -91,14 +92,15 @@ namespace FTP
                     retstr = retArray[5].Substring(0, 3);
 
                 dataPort = Convert.ToInt32(retArray[4]) * 256 + Convert.ToInt32(retstr);
-                Log("<数据连接> 连接端口" + dataPort);
+                Log("<数据连接> 新建一个连接，尝试连接" + IP_Box.Text + ":" + dataPort);
 
                 //连接端口
                 dataServer = new TcpClient(IP_Box.Text, dataPort);
                 dataStrmRdr = new StreamReader(dataServer.GetStream());
                 dataStrmWtr = dataServer.GetStream();
+                Log("<数据连接> 连接成功");
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
             }
@@ -117,11 +119,11 @@ namespace FTP
 
                 Log("<控制连接> 发送ABOR，请服务器断开数据连接");
                 cmdData = "ABOR" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 GetStatus();
             }
-            catch(Exception x)
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
             }
@@ -137,7 +139,7 @@ namespace FTP
             //获取文件列表
             Log("<控制连接> 发送LIST，获取文件列表");
             cmdData = "LIST" + CRLF;
-            szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+            szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
             cmdStrmWtr.Write(szData, 0, szData.Length);
             GetStatus();
 
@@ -170,7 +172,30 @@ namespace FTP
         }
         #endregion
 
-        #region 登录
+        #region 断开控制连接
+        private void CloseCmdPort()
+        {
+            try
+            {
+                Log("<控制连接> 发送QUIT，请服务器断开控制连接");
+                cmdData = "QUIT" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+
+            Log("<控制连接> 本地断开控制连接");
+            cmdStrmWtr.Close();
+            cmdStrmRdr.Close();
+
+        }
+        #endregion
+
+        #region 登录按钮
 
         private void Anonymous_Check_CheckedChanged(object sender, EventArgs e)     //匿名登录
         {
@@ -194,7 +219,7 @@ namespace FTP
             Log("----------------------------------------------------------");
             try
             {
-                Log("<控制连接> 尝试连接" + IP_Box.Text + ":21");
+                Log("<控制连接> 新建一个连接，尝试连接" + IP_Box.Text + ":21");
                 cmdServer = new TcpClient(IP_Box.Text, 21);     //21是FTP协议规定的控制进程端口号
                 Log("<控制连接> 连接成功");
             }
@@ -204,51 +229,39 @@ namespace FTP
                 return;
             }
 
-            try 
+            try
             {
                 cmdStrmRdr = new StreamReader(cmdServer.GetStream());
                 cmdStrmWtr = cmdServer.GetStream();
 
                 //避免连接上不受支持的服务器
                 string[] x = GetStatus().Split(' ');
-                if (x[1] != "Microsoft")
-                {
-                    Log("<系统提示> 该程序只支持IIS，请连接受支持的服务器");
+                if (x[1] != "Microsoft") throw new InvalidOperationException("该程序只支持IIS，请连接受支持的服务器");
 
-                    Log("<控制连接> 发送QUIT，请服务器断开控制连接");
-                    cmdData = "QUIT" + CRLF;
-                    szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-                    cmdStrmWtr.Write(szData, 0, szData.Length);
-                    GetStatus();
-
-                    Log("<控制连接> 本地断开控制连接");
-                    cmdStrmWtr.Close();
-                    cmdStrmRdr.Close();
-
-                    return;
-                }
                 string retstr;
 
                 //登录
-                Log("<控制连接> 发送用户名");
+
+                Log("<控制连接> 发送USER " + User_Box.Text);
                 cmdData = "USER " + User_Box.Text + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 501) throw new InvalidOperationException("帐号不合法");
 
-                Log("<控制连接> 发送密码");
+                Log("<控制连接> 发送PASS " + Pwd_Box.Text);
                 cmdData = "PASS " + Pwd_Box.Text + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
                 retstr = GetStatus().Substring(0, 3);
                 if (Convert.ToInt32(retstr) == 530) throw new InvalidOperationException("帐号密码错误");
 
-                Log("<控制连接> 要求服务器使用UTF8编码");
+                Log("<控制连接> 发送OPTS UTF8 ON，要求服务器使用UTF8编码");
                 cmdData = "OPTS UTF8 ON" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                 cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
+                retstr = GetStatus().Substring(0, 3);
+                if (Convert.ToInt32(retstr) == 501) Log("<系统提示> 服务器不允许使用UTF8传输数据，程序可能无法正常运行");
 
                 LoadFolderBox();        //加载文件列表
 
@@ -258,36 +271,23 @@ namespace FTP
                 Anonymous_Check.Enabled = false;
                 Login_Button.Enabled = false;
                 Logout_Button.Enabled = true;
+                Back_Button.Enabled = true;
                 Upload_Button.Enabled = true;
                 Download_Button.Enabled = true;
-            }
-            catch(Exception x)
-            {
-                Log("<系统提示> " + x.Message);
-            }
-        }
-        #endregion
-
-        #region 断开控制连接
-
-        private void Logout_Button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                Log("<控制连接> 发送QUIT，请服务器断开控制连接");
-                cmdData = "QUIT" + CRLF;
-                szData = Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                GetStatus();
             }
             catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
+                CloseCmdPort();
             }
+        }
+        #endregion
 
-            Log("<控制连接> 本地断开控制连接");
-            cmdStrmWtr.Close();
-            cmdStrmRdr.Close();
+        #region 断开连接按钮
+
+        private void Logout_Button_Click(object sender, EventArgs e)
+        {
+            CloseCmdPort();
 
             IP_Box.Enabled = true;
             if (!Anonymous_Check.Checked)
@@ -296,6 +296,7 @@ namespace FTP
                 Pwd_Box.Enabled = true;
             }
             Anonymous_Check.Enabled = true;
+            Back_Button.Enabled = false;
             Login_Button.Enabled = true;
             Logout_Button.Enabled = false;
             Upload_Button.Enabled = false;
@@ -306,106 +307,204 @@ namespace FTP
 
         #endregion
 
-        #region 上传
+        #region 选择文件夹控件
+        private void Folder_Box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Folder_Box.SelectedItem == null) throw new Exception("未选择文件夹");
+
+                OpenDataPort();
+
+                Log("<控制连接> 发送CWD，获取文件列表");
+                cmdData = "CWD " + Folder_Box.SelectedItem.ToString() + "\n";
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Log("<控制连接> 发送LIST，获取文件列表");
+                cmdData = "LIST" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+
+                Folder_Box.Items.Clear();
+                File_Box.Items.Clear();
+
+                Log("<数据连接> 正在接收文件列表");
+                string fileInfo = dataStrmRdr.ReadToEnd();
+                string[] fileLineArray = Regex.Split(fileInfo, "\n");
+                foreach (var Info in fileLineArray)
+                {
+                    if (Info == "")
+                    {
+                        break;
+                    }
+                    Regex regex = new Regex("\\s+");
+                    string[] fileInfoSplit = regex.Split(Info, 4);
+                    string name = fileInfoSplit[fileInfoSplit.Length - 1];  //文件名或文件夹名
+                    if (fileInfoSplit[2] == "<DIR>")
+                    {
+                        Folder_Box.Items.Add(name);
+                    }
+                    else
+                    {
+                        File_Box.Items.Add(name);
+                    }
+                }
+                Log("<数据连接> 文件列表的数据处理完毕");
+                CloseDataPort();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+        }
+        #endregion
+
+        #region 返回上级菜单按钮
+        private void Back_Button_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                Log("<控制连接> 发送CDUP，返回上级菜单");
+                cmdData = "CDUP" + CRLF;
+                szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                cmdStrmWtr.Write(szData, 0, szData.Length);
+                GetStatus();
+                LoadFolderBox();
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
+            }
+        }
+        #endregion
+
+        #region 上传按钮
 
         private void Upload_Button_Click(object sender, EventArgs e)
         {
             var fileContent = string.Empty;
             var filePath = string.Empty;
 
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            try
             {
-                openFileDialog.InitialDirectory = "c:\\";
-                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-                openFileDialog.FilterIndex = 2;
-                openFileDialog.RestoreDirectory = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    //Get the path of specified file
-                    filePath = openFileDialog.FileName;
-                    
+                    openFileDialog.InitialDirectory = "c:\\";
+                    openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                    openFileDialog.FilterIndex = 2;
+                    openFileDialog.RestoreDirectory = true;
+
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        filePath = openFileDialog.FileName;     //Get the path of specified file
+                    }
+
                 }
-               
+
+                string fileName = Path.GetFileName(filePath);
+
+                if (fileName == "" && filePath == "")
+                    Log("<系统提示> 未选择正确文件");
+                else
+                {
+                    Cursor cr = Cursor.Current;
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    this.OpenDataPort();
+
+                    cmdData = "STOR " + fileName + CRLF;
+                    szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    cmdStrmWtr.Write(szData, 0, szData.Length);
+                    this.GetStatus();
+
+                    FileStream fstrm = new FileStream(filePath, FileMode.Open);
+                    byte[] fbytes = new byte[1030];
+                    int cnt = 0;
+                    while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
+                    {
+                        //if (File_Box.SelectedItem == null) throw new Exception("文件上传失败，请重试");
+                        dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
+                    }
+                    fstrm.Close();
+                    Log("<系统提示> 文件上传成功");
+
+                    this.CloseDataPort();
+
+                    this.LoadFolderBox();
+
+                    Cursor.Current = cr;
+                }
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
             }
 
-            string fileName = Path.GetFileName(filePath);
-
-            if (fileName != "" && filePath != "")
-            {
-                Cursor cr = Cursor.Current;
-                Cursor.Current = Cursors.WaitCursor;
-
-                this.OpenDataPort();
-
-                cmdData = "STOR " + fileName + CRLF;
-                szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                this.GetStatus();
-
-                FileStream fstrm = new FileStream(filePath, FileMode.Open);
-                byte[] fbytes = new byte[1030];
-                int cnt = 0;
-                while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
-                {
-                    dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
-                }
-                fstrm.Close();
-
-                this.CloseDataPort();
-
-                this.LoadFolderBox();
-
-                Cursor.Current = cr;
-            }
-
-            else MessageBox.Show("请重新选择正确路径");
         }
 
         #endregion
 
-        #region 下载
+        #region 下载按钮
 
         private void Download_Button_Click(object sender, EventArgs e)
         {
-            if (Folder_Box.Text == "" || File_Box.SelectedIndex < 0)
+            try
             {
-                MessageBox.Show("请选择目标文件和下载路径", "ERROR");
-                return;
+                if (File_Box.SelectedItem == null) throw new Exception("未选择文件");
+                string fileName1 = File_Box.SelectedItem.ToString();
+                string fileName = fileName1.Substring(0, fileName1.Length - 1);
+                string filePath = "";
+                FolderBrowserDialog P_File_Folder = new FolderBrowserDialog();
+                if (P_File_Folder.ShowDialog() == DialogResult.OK)
+                {
+                    filePath = P_File_Folder.SelectedPath + "\\" + fileName;
+                }
+
+
+                if (fileName != "" && filePath != "")
+                {
+                    Log("<系统提示> 文件开始下载");
+                    Cursor cr = Cursor.Current;
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    this.OpenDataPort();
+
+                    cmdData = "RETR " + fileName + CRLF;
+                    szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    cmdStrmWtr.Write(szData, 0, szData.Length);
+                    this.GetStatus();
+                    MessageBox.Show(filePath);
+
+                    FileStream fstrm = new FileStream(filePath, FileMode.Create);
+                                                                                                                                                                                
+                    char[] fchars = new char[1030];
+                    byte[] fbytes = new byte[1030];
+                    int cnt = 0;
+                    while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+                    {
+                        fstrm.Write(fbytes, 0, cnt);
+                    }
+
+                    fstrm.Close();
+                    Log("<系统提示> 文件下载成功");
+
+                    this.CloseDataPort();
+
+                    Cursor.Current = cr;
+                }
+                else MessageBox.Show("请重新选择正确路径");
             }
-
-            Cursor cr = Cursor.Current;
-            Cursor.Current = Cursors.WaitCursor;
-
-            string fileName = File_Box.Items[File_Box.SelectedIndex].ToString();
-            string filePath = Folder_Box.Text + "\\" + fileName;
-
-            this.OpenDataPort();
-
-            cmdData = "RETR " + fileName + CRLF;
-            szData = System.Text.Encoding.ASCII.GetBytes(cmdData.ToCharArray());
-            cmdStrmWtr.Write(szData, 0, szData.Length);
-            this.GetStatus();
-
-            FileStream fstrm = new FileStream(filePath, FileMode.OpenOrCreate);
-            char[] fchars = new char[1030];
-            byte[] fbytes = new byte[1030];
-            int cnt = 0;
-            while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+            catch(Exception x)
             {
-                fstrm.Write(fbytes, 0, cnt);
+                Log("<系统提示> " + x.Message);
             }
-            fstrm.Close();
-
-            this.CloseDataPort();
-
-            this.LoadFolderBox();
-
-            Cursor.Current = cr;
         }
 
-        #endregion
 
+        #endregion
 
     }
 }
