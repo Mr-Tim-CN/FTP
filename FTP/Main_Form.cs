@@ -449,21 +449,23 @@ namespace FTP
 
         #region 下载按钮
 
+       
         private void Download_Button_Click(object sender, EventArgs e)
         {
+            string filePath="";FileStream fstrm;
             try
             {
                 if (File_Box.SelectedItem == null) throw new Exception("未选择文件");
                 string fileName1 = File_Box.SelectedItem.ToString();
                 string fileName = fileName1.Substring(0, fileName1.Length - 1);
-                string filePath = "";
+
                 FolderBrowserDialog P_File_Folder = new FolderBrowserDialog();
                 if (P_File_Folder.ShowDialog() == DialogResult.OK)
                 {
                     filePath = P_File_Folder.SelectedPath + "\\" + fileName;
                 }
 
-
+                
                 if (fileName != "" && filePath != "")
                 {
                     Log("<系统提示> 文件开始下载");
@@ -478,7 +480,7 @@ namespace FTP
                     this.GetStatus();
                     MessageBox.Show(filePath);
 
-                    FileStream fstrm = new FileStream(filePath, FileMode.Create);
+                    fstrm = new FileStream(filePath, FileMode.Create);
                                                                                                                                                                                 
                     char[] fchars = new char[1030];
                     byte[] fbytes = new byte[1030];
@@ -487,7 +489,6 @@ namespace FTP
                     {
                         fstrm.Write(fbytes, 0, cnt);
                     }
-
                     fstrm.Close();
                     Log("<系统提示> 文件下载成功");
 
@@ -497,10 +498,20 @@ namespace FTP
                 }
                 else MessageBox.Show("请重新选择正确路径");
             }
-            catch(Exception x)
+            catch(NullReferenceException x)
             {
                 Log("<系统提示> " + x.Message);
             }
+            catch(IOException t)
+            {
+                Log("<系统提示> " + t.Message);
+
+                MessageBox.Show(filePath);
+
+                //File.Delete(filePath);这里会报错是因为文件正在被ftp占用
+            }
+
+
         }
 
 
