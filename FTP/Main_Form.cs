@@ -3,10 +3,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Net;
 using System.Text;
-using System.Windows.Forms.VisualStyles;
-using System.Diagnostics;
 
 namespace FTP
 {
@@ -473,33 +470,44 @@ namespace FTP
                     char[] fchars = new char[1030];
                     byte[] fbytes = new byte[1030];
                     int cnt = 0;
-                    while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+
+                    bool flag = true;
+
+                    try
                     {
-                        fstrm.Write(fbytes, 0, cnt);
+                        while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
+                        {
+                            fstrm.Write(fbytes, 0, cnt);
+                        }
                     }
-                    fstrm.Flush();
-                    fstrm.Close();
-                    Log("<系统提示> 文件下载成功");
+                    catch (Exception x)
+                    {
+                        Log("<系统提示> " + x.Message);
+                        fstrm.Close();
+                        File.Delete(filePath);
+                        flag = false;
+                    }
+
+
+
+                    if (flag)
+                    {
+                        fstrm.Close();
+                        Log("<系统提示> 文件下载成功");
+                    }
 
                     CloseDataPort();
-
                     Cursor.Current = cr;
                 }
                 else MessageBox.Show("请重新选择正确路径");
             }
-            catch(NullReferenceException x)
+
+            catch (Exception x)
             {
                 Log("<系统提示> " + x.Message);
             }
-            catch(IOException t)
-            {
-                Log("<系统提示> " + t.Message);
-            }
-
 
         }
-
-
         #endregion
 
     }
