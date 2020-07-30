@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Net;
 using System.Text;
 
 namespace FTP
@@ -387,53 +388,61 @@ namespace FTP
             var fileContent = string.Empty;
             var filePath = string.Empty;
 
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            try
             {
-                openFileDialog.InitialDirectory = "c:\\";
-                openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-                openFileDialog.FilterIndex = 2;
-                openFileDialog.RestoreDirectory = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                using (OpenFileDialog openFileDialog = new OpenFileDialog())
                 {
-                    //Get the path of specified file
-                    filePath = openFileDialog.FileName;
-                    
+                    openFileDialog.InitialDirectory = "c:\\";
+                    openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
+                    openFileDialog.FilterIndex = 2;
+                    openFileDialog.RestoreDirectory = true;
+
+                    if (openFileDialog.ShowDialog() == DialogResult.OK)
+                    {
+                        filePath = openFileDialog.FileName;     //Get the path of specified file
+                    }
+
                 }
-               
+
+                string fileName = Path.GetFileName(filePath);
+
+                if (fileName == "" && filePath == "")
+                    Log("<系统提示> 未选择正确文件");
+                else
+                {
+                    Cursor cr = Cursor.Current;
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    this.OpenDataPort();
+
+                    cmdData = "STOR " + fileName + CRLF;
+                    szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    cmdStrmWtr.Write(szData, 0, szData.Length);
+                    this.GetStatus();
+
+                    FileStream fstrm = new FileStream(filePath, FileMode.Open);
+                    byte[] fbytes = new byte[1030];
+                    int cnt = 0;
+                    while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
+                    {
+                        //if (File_Box.SelectedItem == null) throw new Exception("文件上传失败，请重试");
+                        dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
+                    }
+                    fstrm.Close();
+                    Log("<系统提示> 文件上传成功");
+
+                    this.CloseDataPort();
+
+                    this.LoadFolderBox();
+
+                    Cursor.Current = cr;
+                }
+            }
+            catch (Exception x)
+            {
+                Log("<系统提示> " + x.Message);
             }
 
-            string fileName = Path.GetFileName(filePath);
-
-            if (fileName != "" && filePath != "")
-            {
-                Cursor cr = Cursor.Current;
-                Cursor.Current = Cursors.WaitCursor;
-
-                this.OpenDataPort();
-
-                cmdData = "STOR " + fileName + CRLF;
-                szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
-                cmdStrmWtr.Write(szData, 0, szData.Length);
-                this.GetStatus();
-
-                FileStream fstrm = new FileStream(filePath, FileMode.Open);
-                byte[] fbytes = new byte[1030];
-                int cnt = 0;
-                while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
-                {
-                    dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
-                }
-                fstrm.Close();
-
-                this.CloseDataPort();
-
-                this.LoadFolderBox();
-
-                Cursor.Current = cr;
-            }
-
-            else MessageBox.Show("请重新选择正确路径");
         }
 
         #endregion
