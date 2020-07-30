@@ -404,12 +404,12 @@ namespace FTP
                     Cursor cr = Cursor.Current;
                     Cursor.Current = Cursors.WaitCursor;
 
-                    this.OpenDataPort();
+                    OpenDataPort();
 
                     cmdData = "STOR " + fileName + CRLF;
-                    szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                     cmdStrmWtr.Write(szData, 0, szData.Length);
-                    this.GetStatus();
+                    GetStatus();
 
                     FileStream fstrm = new FileStream(filePath, FileMode.Open);
                     byte[] fbytes = new byte[1030];
@@ -421,25 +421,15 @@ namespace FTP
                     fstrm.Close();
                     Log("<系统提示> 文件上传成功");
 
-                    this.CloseDataPort();
-                    this.LoadFolderBox();
+                    CloseDataPort();
+                    LoadFolderBox();
                     Cursor.Current = cr;
                 }
             }
-            catch (WebException ex)
+            catch (Exception x)
             {
-                this.CloseDataPort();
-                Log("<系统提示> " + ex.Status);
-            }
-            catch (NullReferenceException x)
-            {
-                this.CloseDataPort();
                 Log("<系统提示> " + x.Message);
-            }
-            catch (IOException t)
-            {
-                this.CloseDataPort();
-                Log("<系统提示> " + t.Message);
+                CloseDataPort();
             }
         }
 
@@ -470,12 +460,12 @@ namespace FTP
                     Cursor cr = Cursor.Current;
                     Cursor.Current = Cursors.WaitCursor;
 
-                    this.OpenDataPort();
+                    OpenDataPort();
 
                     cmdData = "RETR " + fileName + CRLF;
-                    szData = System.Text.Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                     cmdStrmWtr.Write(szData, 0, szData.Length);
-                    this.GetStatus();
+                    GetStatus();
                     MessageBox.Show(filePath);
 
                     fstrm = new FileStream(filePath, FileMode.Create);
@@ -490,7 +480,7 @@ namespace FTP
                     fstrm.Close();
                     Log("<系统提示> 文件下载成功");
 
-                    this.CloseDataPort();
+                    CloseDataPort();
 
                     Cursor.Current = cr;
                 }
