@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Net;
 using System.Text;
 using System.Windows.Forms.VisualStyles;
+using System.Diagnostics;
 
 namespace FTP
 {
@@ -443,7 +444,7 @@ namespace FTP
             string filePath="";FileStream fstrm;
             try
             {
-                if (File_Box.SelectedItem == null) throw new Exception("未选择文件");
+
                 string fileName1 = File_Box.SelectedItem.ToString();
                 string fileName = fileName1.Substring(0, fileName1.Length - 1);
 
@@ -452,7 +453,7 @@ namespace FTP
                 {
                     filePath = P_File_Folder.SelectedPath + "\\" + fileName;
                 }
-
+                P_File_Folder.Dispose();
                 
                 if (fileName != "" && filePath != "")
                 {
@@ -466,7 +467,6 @@ namespace FTP
                     szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                     cmdStrmWtr.Write(szData, 0, szData.Length);
                     GetStatus();
-                    MessageBox.Show(filePath);
 
                     fstrm = new FileStream(filePath, FileMode.Create);
                                                                                                                                                                                 
@@ -477,6 +477,7 @@ namespace FTP
                     {
                         fstrm.Write(fbytes, 0, cnt);
                     }
+                    fstrm.Flush();
                     fstrm.Close();
                     Log("<系统提示> 文件下载成功");
 
@@ -493,10 +494,6 @@ namespace FTP
             catch(IOException t)
             {
                 Log("<系统提示> " + t.Message);
-
-                MessageBox.Show(filePath);
-
-                //File.Delete(filePath);这里会报错是因为文件正在被ftp占用
             }
 
 
