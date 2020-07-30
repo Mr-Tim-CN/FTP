@@ -59,7 +59,7 @@ namespace FTP
             }
             catch (Exception e)
             {
-                Log(e.Message);
+                Log("<系统提示>" + e.Message);
             }
             return "Failed";
         }
@@ -114,7 +114,6 @@ namespace FTP
                 Log("<数据连接> 本地断开数据连接");
                 dataStrmRdr.Close();
                 dataStrmWtr.Close();
-                GetStatus();
 
                 Log("<控制连接> 发送ABOR，请服务器断开数据连接");
                 cmdData = "ABOR" + CRLF;
@@ -147,6 +146,7 @@ namespace FTP
 
             Log("<数据连接> 正在接收文件列表");
             string fileInfo = dataStrmRdr.ReadToEnd();
+            GetStatus();
             string[] fileLineArray = Regex.Split(fileInfo, "\n");
             foreach (var Info in fileLineArray)
             {
@@ -166,7 +166,7 @@ namespace FTP
                     File_Box.Items.Add(name);
                 }
             }
-            Log("<数据连接> 文件列表的数据处理完毕");
+            Log("<数据连接> 文件列表的数据接收完毕");
             CloseDataPort();
         }
         #endregion
@@ -332,6 +332,7 @@ namespace FTP
 
                 Log("<数据连接> 正在接收文件列表");
                 string fileInfo = dataStrmRdr.ReadToEnd();
+                GetStatus();
                 string[] fileLineArray = Regex.Split(fileInfo, "\n");
                 foreach (var Info in fileLineArray)
                 {
@@ -381,7 +382,6 @@ namespace FTP
         #endregion
 
         #region 上传按钮
-
         private void Upload_Button_Click(object sender, EventArgs e)
         {
             var filePath = string.Empty;
@@ -404,6 +404,7 @@ namespace FTP
 
                     OpenDataPort();
 
+                    Log("<控制连接> 发送STOR，请服务器开始接收文件数据");
                     cmdData = "STOR " + fileName + CRLF;
                     szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                     cmdStrmWtr.Write(szData, 0, szData.Length);
@@ -412,14 +413,44 @@ namespace FTP
                     FileStream fstrm = new FileStream(filePath, FileMode.Open);
                     byte[] fbytes = new byte[1030];
                     int cnt = 0;
-                    while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
-                    {
-                        dataStrmWtr.Write(fbytes, 0, cnt);
-                    }
-                    fstrm.Close();
-                    Log("<系统提示> 文件上传成功");
 
-                    CloseDataPort();
+                    bool flag = true;       //代表是否上传成功
+                    try
+                    {
+                        Log("<系统提示> 文件上传开始");
+                        while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
+                        {
+                            dataStrmWtr.Write(fbytes, 0, cnt);
+                        }
+                    }
+                    catch (Exception x)
+                    {
+                        Log("<系统提示> " + x.Message);
+                        flag = false;
+                    }
+
+                    if (flag)
+                    {
+                        Log("<系统提示> 文件上传成功");
+                    }
+                    else
+                    {
+                        Log("<系统提示> 文件上传失败");
+                    }
+
+                    fstrm.Close();
+
+                    Log("<数据连接> 本地断开数据连接");
+                    dataStrmRdr.Close();
+                    dataStrmWtr.Close();
+                    GetStatus();
+
+                    Log("<控制连接> 发送ABOR，请服务器断开数据连接");
+                    cmdData = "ABOR" + CRLF;
+                    szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
+                    cmdStrmWtr.Write(szData, 0, szData.Length);
+                    GetStatus();
+
                     LoadFolderBox();
                     Cursor.Current = cr;
                 }
@@ -430,17 +461,16 @@ namespace FTP
                 CloseDataPort();
             }
         }
-
         #endregion
 
         #region 下载按钮
-
-       
         private void Download_Button_Click(object sender, EventArgs e)
         {
-            string filePath="";FileStream fstrm;
+            string filePath="";
+            FileStream fstrm;
             try
             {
+                if (File_Box.SelectedItem == null) throw new Exception("未选择文件");
 
                 string fileName1 = File_Box.SelectedItem.ToString();
                 string fileName = fileName1.Substring(0, fileName1.Length - 1);
@@ -454,12 +484,12 @@ namespace FTP
                 
                 if (fileName != "" && filePath != "")
                 {
-                    Log("<系统提示> 文件开始下载");
                     Cursor cr = Cursor.Current;
                     Cursor.Current = Cursors.WaitCursor;
 
                     OpenDataPort();
 
+                    Log("<控制连接> 发送RETR，请服务器开始传输文件数据");
                     cmdData = "RETR " + fileName + CRLF;
                     szData = Encoding.UTF8.GetBytes(cmdData.ToCharArray());
                     cmdStrmWtr.Write(szData, 0, szData.Length);
@@ -471,10 +501,11 @@ namespace FTP
                     byte[] fbytes = new byte[1030];
                     int cnt = 0;
 
-                    bool flag = true;
+                    bool flag = true;       //代表是否下载成功
 
                     try
                     {
+                        Log("<系统提示> 文件下载开始");
                         while ((cnt = dataStrmWtr.Read(fbytes, 0, 1024)) > 0)
                         {
                             fstrm.Write(fbytes, 0, cnt);
@@ -488,12 +519,15 @@ namespace FTP
                         flag = false;
                     }
 
-
-
                     if (flag)
                     {
                         fstrm.Close();
+                        GetStatus();
                         Log("<系统提示> 文件下载成功");
+                    }
+                    else
+                    {
+                        Log("<系统提示> 文件下载失败");
                     }
 
                     CloseDataPort();
