@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Text;
+using System.Windows.Forms.VisualStyles;
 
 namespace FTP
 {
@@ -385,30 +386,20 @@ namespace FTP
 
         private void Upload_Button_Click(object sender, EventArgs e)
         {
-            var fileContent = string.Empty;
             var filePath = string.Empty;
 
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.FileName = openFileDialog.FileName.ToString();
+            openFileDialog.Filter = "所有文件(*.*)|*.*";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+                filePath = openFileDialog.FileName;         //获取文件路径
+            
+            string fileName = Path.GetFileName(filePath);   //获取文件名
+
             try
-            {
-                using (OpenFileDialog openFileDialog = new OpenFileDialog())
-                {
-                    openFileDialog.InitialDirectory = "c:\\";
-                    openFileDialog.Filter = "txt files (*.txt)|*.txt|All files (*.*)|*.*";
-                    openFileDialog.FilterIndex = 2;
-                    openFileDialog.RestoreDirectory = true;
-
-                    if (openFileDialog.ShowDialog() == DialogResult.OK)
-                    {
-                        filePath = openFileDialog.FileName;     //Get the path of specified file
-                    }
-
-                }
-
-                string fileName = Path.GetFileName(filePath);
-
-                if (fileName == "" && filePath == "")
-                    Log("<系统提示> 未选择正确文件");
-                else
+            { 
+                if(fileName != "" && filePath != "")        
                 {
                     Cursor cr = Cursor.Current;
                     Cursor.Current = Cursors.WaitCursor;
@@ -425,24 +416,31 @@ namespace FTP
                     int cnt = 0;
                     while ((cnt = fstrm.Read(fbytes, 0, 1024)) > 0)
                     {
-                        //if (File_Box.SelectedItem == null) throw new Exception("文件上传失败，请重试");
-                        dataStrmWtr.Write(fbytes, 0, cnt);  //无法将数据写入传输连接: 远程主机强迫关闭了一个现有的连接。。”
+                        dataStrmWtr.Write(fbytes, 0, cnt);
                     }
                     fstrm.Close();
                     Log("<系统提示> 文件上传成功");
 
                     this.CloseDataPort();
-
                     this.LoadFolderBox();
-
                     Cursor.Current = cr;
                 }
             }
-            catch (Exception x)
+            catch (WebException ex)
             {
+                this.CloseDataPort();
+                Log("<系统提示> " + ex.Status);
+            }
+            catch (NullReferenceException x)
+            {
+                this.CloseDataPort();
                 Log("<系统提示> " + x.Message);
             }
-
+            catch (IOException t)
+            {
+                this.CloseDataPort();
+                Log("<系统提示> " + t.Message);
+            }
         }
 
         #endregion
